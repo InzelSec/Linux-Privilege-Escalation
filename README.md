@@ -4,6 +4,34 @@
   <img src="https://github.com/user-attachments/assets/14b2c4c2-4a11-4bea-85de-fa660dfe591e" alt="InzelSec Logo" width="150"/>
 </p>
 
+## Summary
+
+- [Restricted Shells](#restricted-shells)
+- [LinPeas and LinEnum](#tools)
+- [Transferring files (wget, curl & scp)](#transferring-files)
+- [1. Manual enumeration / Information Gathering](#1-manual-enumeration)
+- [2. SUDO](#2-sudo)
+- [3. SUID / SGID](#3-suid)
+- [4. Capabilities](#4-capabilities)
+- [5. Cron Jobs](#5-cron-jobs)
+- [6. PATH](#6-path)
+- [7. NFS](#7-nfs)
+- [8. Write permission on /etc/passwd](#8-write-on-etcpasswd)
+- [9. Groups (LXD, Docker, Disk, Adm)](#9-groups)
+  - [9.1 LXD](#9.1-lxd)
+  - [9.2 Docker](#9.1-docker)
+  - [9.3 Disk](#9.1-disk)
+  - [9.4 Adm](#9.1-adm)
+- [10. Others..](#10-others)
+  - [10.1 Screen](#10-screen)
+  - [10.2 Logrotate](#10-logrotate)
+  - [10.3 Kubernetes](#10-kubernetes)
+  - [10.4 Shared Object Hijacking](#10-shared-object-hijack)
+  - [10.5 Python Library Hijacking](#10-python-hijack)
+  - [10.6 0-Days (CVEs)](#10-cves)
+
+
+
 https://gtfobins.github.io/
 
 ```bash
