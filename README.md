@@ -8,6 +8,9 @@ https://gtfobins.github.io/
 
 ```bash
 python3 -c 'import pty; pty.spawn("/bin/bash")'
+```
+
+```
 export TERM=xterm
 # OR
 export TERM=linux
