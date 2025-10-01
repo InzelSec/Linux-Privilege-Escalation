@@ -6,9 +6,9 @@
 
 ## Summary
 
-[LinPeas and LinEnum](#tools)<br>
-[Transferring files (wget, curl & scp)](#transferring-files)<br>
-[Restricted Shells](#restricted-shells)
+- [LinPeas and LinEnum](#tools)
+- [Transferring files (wget, curl & scp)](#transferring-files)
+- [Restricted Shells](#restricted-shells)
 ---
 - [1. Manual enumeration / Information Gathering](#1-manual-enumeration)
 - [2. SUDO](#2-sudo)
