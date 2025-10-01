@@ -33,7 +33,7 @@
 
 ---
 
-https://gtfobins.github.io/
+**GTFObins** → https://gtfobins.github.io/
 
 ```bash
 python3 -c 'import pty; pty.spawn("/bin/bash")'
