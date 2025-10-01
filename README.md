@@ -106,7 +106,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   We can enumerate the available commands with **`compgen -c`** or **`echo *`**.
   
 ---
-<a id="#1-manual-enumeration"></a>
+<a id="1-manual-enumeration"></a>
 # **1. Manual enumeration / Information Gathering**
 (check CVE exploits for the kernel version (`uname -a`  or  `cat /proc/version`))
 
@@ -255,7 +255,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   ```
 
 ---
-<a id="#2-sudo"></a>
+<a id="2-sudo"></a>
 # 2. **SUDO**
   List commands we can run with sudo.
   
@@ -334,7 +334,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
       * `sudo LD_PRELOAD=/home/user/shell.so find`
 
 ---
-<a id="#3-suid"></a>
+<a id="3-suid"></a>
 # 3. **SUID / SGID**
 
   * Allows the program to be executed with the same permissions as the Owner (remember to use the full **PATH**).
@@ -352,7 +352,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     ```
 
 ---
-<a id="#4-capabilities"></a>
+<a id="4-capabilities"></a>
 # 4. **Capabilities**
 
   * When specific privileges are granted to a user to perform tasks.
@@ -372,7 +372,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
       `/home/karen/vim -c ‘:py3 import os; os.setuid(0); os.exec(”/bin/sh”, “sh”, “-c”, “reset; exec sh”)’`
 
 ---
-<a id="#5-cron-jobs"></a>
+<a id="5-cron-jobs"></a>
 # 5. **Cron Jobs**
 
   * Scripts or commands set to run at specific times, by default they run with the owner's privileges.
@@ -426,7 +426,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   * Many times the program may have been deleted, but it may be that the admin forgot to delete it in Cron Jobs too, that is, we can simply create a program with the same name of the missing one in the referenced directory.
 
 ---
-<a id="#6-path"></a>
+<a id="6-path"></a>
 # 6. **PATH**
 
   * Environment variable listing directories. Basically when we type a command without specifying its directory, the system will look through the list of PATH directories; we can then add a directory at the beginning of the list and execute a command/program.
@@ -460,7 +460,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   * Now just run it in another directory and without specifying it.
 
 ---
-<a id="#7-nfs"></a>
+<a id="7-nfs"></a>
 # 7. **NFS**
 
   * **NFS (Network File Sharing)** → protocol that allows mounting remote file systems so they can be accessed as if local. Basically when there is a directory on the target machine that allows sharing with other computers, then we create a share with our machine and in that share we create a file that executes with root permissions and also set the +s bit, thus on the target machine we can execute that file and escalate to root.
@@ -500,7 +500,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     * Since we already mounted the share, the file will already be in the target machine's directory (`/backups`), we don't need to transfer it.
 
 ---
-<a id="#8-write-on-etcpasswd"></a>
+<a id="8-write-on-etcpasswd"></a>
 # 8. Write permission on **/etc/passwd**
 
   ```bash
@@ -515,11 +515,11 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     * `root:$1$...:0:0:root:/root:/bin/bash`
 
 ---
-<a id="#9-groups"></a>
+<a id="9-groups"></a>
 # 9. **Groups** (LXD, Docker, Disk, Adm)
 
   Run **`id`** and see if we are in any of the groups below.
-  <a id="#9.1-lxd"></a>
+  <a id="9.1-lxd"></a>
   ## **LXD**
   
   If the user belongs to the **`lxd`** group, they can **create containers**. With a privileged container + volume mount, you can **access the host filesystem as root**, even as a regular user.
@@ -573,7 +573,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     ```
 
   ---
-  <a id="#9.2-docker"></a>
+  <a id="9.2-docker"></a>
   ## **Docker**
 
   ### 1. Check if you are in a Docker container
@@ -701,7 +701,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   * Privileged containers allow mounting the host `/`: this gives **full root access**.
 
   ---
-  <a id="#9.3-disk"></a>
+  <a id="9.3-disk"></a>
   ## **Disk**
 
     ```bash
@@ -717,7 +717,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     ```
 
   ---
-  <a id="#9.4-adm"></a>
+  <a id="9.4-adm"></a>
   ## **Adm**
 
   Being in this group, we have permission to read all logs inside **`/var/log`**
@@ -733,9 +733,9 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     ```
 
 ---
-<a id="#10-others"></a>
+<a id="10-others"></a>
 # 10. **Others..**
-  <a id="#10.1-screen"></a>
+  <a id="10.1-screen"></a>
   * **Screen** (`screen -v`)
 
     Screen version 4.5.0 → vulnerable.
@@ -744,7 +744,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     [https://github.com/YasserREED/screen-v4.5.0-priv-escalate](https://github.com/YasserREED/screen-v4.5.0-priv-escalate)
 
 ---
-  <a id="#10.2-logrotate"></a>
+  <a id="10.2-logrotate"></a>
   * **Logrotate** (`logrotate --version`)
 
     Tool to manage log files on Linux.
@@ -894,7 +894,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
     * `-f` forces rotation and can help test during a CTF or HTB box if you have limited sudo.
 
   ---
-  <a id="#10.3-kubernetes"></a>
+  <a id="10.3-kubernetes"></a>
   ## **Kubernetes**
 
   ### 1. Check access to the Kubelet API
@@ -1031,7 +1031,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
 
 ---
-  <a id="#10.4-shared-object-hijack"></a>
+  <a id="10.4-shared-object-hijack"></a>
   ## **Shared Object Hijacking**
 
   Dynamic programs use **`.so`** libraries to perform functions external to the main code.
@@ -1084,7 +1084,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
 
 
   ---
-  <a id="#10.5-python-hijack"></a>
+  <a id="10.5-python-hijack"></a>
   ## **Python Library Hijacking**
 
   Use when you find **Python scripts** executed with **elevated privileges**, such as:
@@ -1200,7 +1200,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   | See if `sudo` allows PYTHONPATH | `sudo -l`                                   |
 
   ---
-  <a id="#10.6-cves"></a>
+  <a id="10.6-cves"></a>
   ## **0-Days (CVEs)**
 
   * **Sudo**
