@@ -1088,7 +1088,7 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   When you are allowed to execute a **Python script with elevated privileges** (via `sudo`, `SUID`, etc.) and that script **imports external modules**, you can exploit Python’s **module resolution order** to execute arbitrary code.
   
   
-  #### Prerequisites  
+  ### Prerequisites  
   * You can **run a Python script as root or another privileged user**:
   * The script **imports external modules**, such as `os`, `random`, `base64`, etc.
   
@@ -1103,6 +1103,9 @@ We can run commands inserted inside commands that we have permission for, e.g.:
   sudo PYTHONPATH=/tmp sudo -E /usr/bin/python3 /opt/script.py
   ```
 
+  ---
+
+  
   ## Exploitation Steps
   
   ### 1. Identify Imported Modules
