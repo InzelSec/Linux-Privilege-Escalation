@@ -50,7 +50,13 @@ export TERM=linux
 ## LinPeas and LinEnum
 
   * **LinPeas**: [https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/linPEAS](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/linPEAS)
+    ```bash
+    wget https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh
+    ```
   * **LinEnum:** [https://github.com/rebootuser/LinEnum](https://github.com/rebootuser/LinEnum)
+    ```bash
+    wget https://github.com/rebootuser/LinEnum/blob/master/LinEnum.sh
+    ```
 
 ---
 <a id="transferring-files"></a>
