@@ -53,11 +53,18 @@ export TERM=linux
     ```bash
     wget https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh
     ```
+    
+    ```bash
+    curl -o linpeas.sh https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh
+    ```
   * **LinEnum:** [https://github.com/rebootuser/LinEnum](https://github.com/rebootuser/LinEnum)
     ```bash
     wget https://github.com/rebootuser/LinEnum/blob/master/LinEnum.sh
     ```
-
+    
+    ```bash
+    curl -o linenum.sh https://raw.githubusercontent.com/rebootuser/LinEnum/refs/heads/master/LinEnum.sh
+    ```
 ---
 <a id="transferring-files"></a>
 ## Transferring files (wget, curl & scp)
